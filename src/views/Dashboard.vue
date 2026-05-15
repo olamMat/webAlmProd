@@ -5,7 +5,7 @@ import Header from '../components/Header.vue';
 import StatCard from '../components/StatCard.vue';
 import ReportTable from '../components/ReportTable.vue';
 import TicketModal from '../components/TicketModal.vue';
-import { Users, Clock, Activity, CheckCircle2, AlertCircle } from 'lucide-vue-next';
+import { Users, Clock, Activity, CheckCircle2, AlertCircle, ChevronDown, ChevronUp } from 'lucide-vue-next';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
 
@@ -19,6 +19,7 @@ const currentSearchTerm = ref('');
 const selectedStatus = ref<string | null>(null);
 const pollingId = ref<any>(null);
 const showSidebar = ref(false);
+const showMobileStats = ref(false);
 
 const showModal = ref(false);
 const selectedTicket = ref<any>(null);
@@ -284,8 +285,23 @@ onUnmounted(() => {
         
         <!-- Contenedor superior fijo (Stats Grid y Error Alert) -->
         <div class="flex-shrink-0 space-y-4">
+          <!-- Toggle Button for Mobile Stats -->
+          <div class="md:hidden flex items-center justify-between">
+            <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Indicadores</h3>
+            <button 
+              @click="showMobileStats = !showMobileStats"
+              class="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors shadow-sm"
+            >
+              {{ showMobileStats ? 'Ocultar' : 'Ver resumen' }}
+              <component :is="showMobileStats ? ChevronUp : ChevronDown" class="w-4 h-4" />
+            </button>
+          </div>
+
           <!-- Stats Grid -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          <div 
+            class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 transition-all"
+            :class="[showMobileStats ? 'grid' : 'hidden md:grid']"
+          >
             <StatCard 
               v-for="stat in stats" 
               :key="stat.title"
