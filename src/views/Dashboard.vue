@@ -319,7 +319,7 @@ onUnmounted(() => {
                   <span class="font-bold">Error de Conexión:</span> {{ lastError }}
                 </p>
                 <div class="mt-2 flex gap-3">
-                  <button @click="fetchReport" class="text-xs bg-red-100 hover:bg-red-200 text-red-800 px-2 py-1 rounded font-medium transition-colors">
+                  <button @click="() => { fetchReport(); }" class="text-xs bg-red-100 hover:bg-red-200 text-red-800 px-2 py-1 rounded font-medium transition-colors">
                     Reintentar
                   </button>
                 </div>
