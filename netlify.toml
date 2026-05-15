@@ -1,8 +1,10 @@
 [[redirects]]
   from = "/api/*"
-  to = "http://olamproduc.ngrok.app/:splat"
+  to = "https://olamproduc.ngrok.app/api/:splat"
   status = 200
   force = true
+  [redirects.headers]
+    ngrok-skip-browser-warning = "true"
 
 [[redirects]]
   from = "/*"
