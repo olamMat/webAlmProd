@@ -204,7 +204,12 @@ const handleSubmit = async () => {
   error.value = null;
   try {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const payload = { ...form.value, Usuario: user.Login || 'Sistema' };
+    const payload = { 
+      ...form.value, 
+      ICO: form.value.ICO?.trim() || null,
+      Referencia: form.value.Referencia?.trim() || null,
+      Usuario: user.Login || 'Sistema' 
+    };
     
     const endpoint = props.ticketData ? '/api/editarticket' : '/api/insertarticket';
     const response = await axios.post(endpoint, payload);
