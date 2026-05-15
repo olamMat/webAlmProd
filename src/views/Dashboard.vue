@@ -119,7 +119,24 @@ const exportToExcel = () => {
     return formattedTicket;
   });
 
-  const worksheet = XLSX.utils.json_to_sheet(formattedData);
+  const worksheet = XLSX.utils.json_to_sheet(formattedData, { dateNF: 'dd/mm/yyyy' });
+  
+  // Ensure the specific columns are treated as strings or have the correct format
+  const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+  for (let C = range.s.c; C <= range.e.c; ++C) {
+    const address = XLSX.utils.encode_col(C) + "1";
+    if (!worksheet[address]) continue;
+    const header = worksheet[address].v;
+    if (header === 'Fecha Entrada' || header === 'Fecha Prod') {
+      for (let R = range.s.r + 1; R <= range.e.r; ++R) {
+        const cellAddress = XLSX.utils.encode_col(C) + (R + 1);
+        if (worksheet[cellAddress]) {
+          worksheet[cellAddress].t = 's'; // Force type to string
+        }
+      }
+    }
+  }
+
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "Reporte");
   XLSX.writeFile(workbook, `Reporte_Produccion_${new Date().toISOString().split('T')[0]}.xlsx`);
