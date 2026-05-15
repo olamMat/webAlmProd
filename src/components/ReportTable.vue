@@ -50,9 +50,9 @@ const formatValue = (value: any) => {
 </script>
 
 <template>
-  <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden w-full">
+  <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden w-full flex flex-col h-full">
     <!-- Table Header -->
-    <div class="p-4 md:p-6 border-b border-slate-100 flex items-center justify-between bg-white sticky left-0">
+    <div class="p-4 md:p-6 border-b border-slate-100 flex items-center justify-between bg-white flex-shrink-0">
       <div class="flex items-center gap-2">
         <TableIcon class="w-5 h-5 text-indigo-600" />
         <h3 class="font-semibold text-slate-800">Registros de Producción</h3>
@@ -66,13 +66,13 @@ const formatValue = (value: any) => {
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="p-20 flex flex-col items-center justify-center space-y-4">
+    <div v-if="loading" class="flex-1 flex flex-col items-center justify-center space-y-4 min-h-0">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
       <p class="text-slate-500 font-medium">Cargando datos...</p>
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="data.length === 0" class="p-20 flex flex-col items-center justify-center text-center">
+    <div v-else-if="data.length === 0" class="flex-1 flex flex-col items-center justify-center text-center min-h-0">
       <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
         <FileQuestion class="w-8 h-8 text-slate-300" />
       </div>
@@ -83,17 +83,17 @@ const formatValue = (value: any) => {
     </div>
 
     <!-- Table -->
-    <div v-else class="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
-      <table class="w-full text-left border-collapse min-w-[1000px]">
-        <thead>
-          <tr class="bg-slate-50/50">
-            <th v-if="canEditOrDelete" class="px-6 py-4 text-xs font-bold text-slate-400 uppercase border-b border-slate-100 sticky left-0 bg-slate-50/50 z-10">
+    <div v-else class="flex-1 overflow-auto min-h-0 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+      <table class="w-full text-left border-collapse min-w-[1000px] relative">
+        <thead class="sticky top-0 z-20 bg-slate-50/50 backdrop-blur-sm">
+          <tr>
+            <th v-if="canEditOrDelete" class="px-6 py-4 text-xs font-bold text-slate-400 uppercase border-b border-slate-200 sticky left-0 z-30 bg-slate-50 shadow-[1px_0_0_0_#e2e8f0]">
               Acciones
             </th>
             <th 
               v-for="header in headers" 
               :key="header"
-              class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 whitespace-nowrap"
+              class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-200 whitespace-nowrap bg-slate-50"
             >
               {{ formatHeader(header) }}
             </th>
@@ -105,7 +105,7 @@ const formatValue = (value: any) => {
             :key="index"
             class="hover:bg-indigo-50/30 transition-colors group"
           >
-            <td v-if="canEditOrDelete" class="px-6 py-4 whitespace-nowrap sticky left-0 bg-white group-hover:bg-indigo-50/30 border-b border-slate-100 transition-colors">
+            <td v-if="canEditOrDelete" class="px-6 py-4 whitespace-nowrap sticky left-0 z-10 bg-white group-hover:bg-indigo-50/30 border-b border-slate-100 transition-colors shadow-[1px_0_0_0_#f1f5f9]">
               <div class="flex items-center gap-2">
                 <button 
                   @click="emit('edit', row)"

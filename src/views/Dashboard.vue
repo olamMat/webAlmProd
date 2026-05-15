@@ -110,55 +110,63 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50 flex">
+  <div class="h-screen bg-slate-50 flex overflow-hidden">
     <Sidebar 
       @addTicket="openModal(null)" 
       @exportExcel="exportToExcel" 
     />
     
-    <main class="flex-1 lg:ml-64 flex flex-col min-w-0 overflow-hidden">
+    <main class="flex-1 lg:ml-64 flex flex-col min-w-0 h-screen overflow-hidden">
       <Header 
         title="Dashboard de Producción" 
         @search="handleSearch"
       />
       
-      <div class="p-4 md:p-8 space-y-8 max-w-[1600px] mx-auto w-full overflow-hidden">
-        <!-- Stats Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          <StatCard 
-            v-for="stat in stats" 
-            :key="stat.title"
-            v-bind="stat"
-          />
-        </div>
+      <!-- Contenedor principal con flex-1 y flex-col -->
+      <div class="p-4 md:p-8 flex flex-col flex-1 min-h-0 max-w-[1600px] mx-auto w-full gap-4 md:gap-8">
+        
+        <!-- Contenedor superior fijo (Stats Grid y Error Alert) -->
+        <div class="flex-shrink-0 space-y-4 md:space-y-8">
+          <!-- Stats Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            <StatCard 
+              v-for="stat in stats" 
+              :key="stat.title"
+              v-bind="stat"
+            />
+          </div>
 
-        <!-- Error Alert -->
-        <div v-if="lastError" class="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg shadow-sm">
-          <div class="flex">
-            <div class="flex-shrink-0">
-              <Activity class="h-5 w-5 text-red-400" />
-            </div>
-            <div class="ml-3">
-              <p class="text-sm text-red-700">
-                <span class="font-bold">Error de Conexión:</span> {{ lastError }}
-              </p>
-              <div class="mt-2 flex gap-3">
-                <button @click="fetchReport" class="text-xs bg-red-100 hover:bg-red-200 text-red-800 px-2 py-1 rounded font-medium transition-colors">
-                  Reintentar
-                </button>
+          <!-- Error Alert -->
+          <div v-if="lastError" class="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg shadow-sm">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <Activity class="h-5 w-5 text-red-400" />
+              </div>
+              <div class="ml-3">
+                <p class="text-sm text-red-700">
+                  <span class="font-bold">Error de Conexión:</span> {{ lastError }}
+                </p>
+                <div class="mt-2 flex gap-3">
+                  <button @click="fetchReport" class="text-xs bg-red-100 hover:bg-red-200 text-red-800 px-2 py-1 rounded font-medium transition-colors">
+                    Reintentar
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Report Table Section -->
-        <ReportTable 
-          :data="reportData" 
-          :loading="isLoading" 
-          @refresh="fetchReport"
-          @delete="handleDelete"
-          @edit="openModal"
-        />
+        <!-- Report Table Section contenedor flexible -->
+        <div class="flex-1 min-h-0 overflow-hidden flex flex-col">
+          <ReportTable 
+            :data="reportData" 
+            :loading="isLoading" 
+            @refresh="fetchReport"
+            @delete="handleDelete"
+            @edit="openModal"
+            class="h-full"
+          />
+        </div>
       </div>
     </main>
 
