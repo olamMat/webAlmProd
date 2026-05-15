@@ -114,4 +114,5 @@ const handleLogout = () => {
       </div>
     </div>
   </aside>
+  </div>
 </template>
