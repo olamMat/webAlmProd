@@ -33,10 +33,23 @@ const formatValue = (value: any) => {
   if (value === null || value === undefined) return '-';
   if (typeof value === 'boolean') return value ? 'Sí' : 'No';
   
+  // Handle /Date(ms)/ format
   if (typeof value === 'string' && value.includes('/Date(')) {
     const timestamp = parseInt(value.match(/\/Date\((\d+)\)\//)?.[1] || '0');
     if (timestamp) {
       return new Date(timestamp).toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    }
+  }
+
+  // Handle ISO or common date strings (if they look like dates)
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) {
+    const date = new Date(value);
+    if (!isNaN(date.getTime())) {
+      return date.toLocaleDateString('es-ES', {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric'

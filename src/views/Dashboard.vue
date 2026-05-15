@@ -5,7 +5,7 @@ import Header from '../components/Header.vue';
 import StatCard from '../components/StatCard.vue';
 import ReportTable from '../components/ReportTable.vue';
 import TicketModal from '../components/TicketModal.vue';
-import { Users, Clock, Activity } from 'lucide-vue-next';
+import { Users, Clock, Activity, CheckCircle2, AlertCircle } from 'lucide-vue-next';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
 
@@ -29,7 +29,11 @@ const fetchReport = async () => {
       allTickets.value = response.data.data;
       filterTickets();
       apiStatus.value = 'Online';
-      lastUpdate.value = new Date().toLocaleTimeString();
+      lastUpdate.value = new Date().toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
     } else {
       throw new Error(response.data.message || 'Error al obtener reporte');
     }
@@ -82,27 +86,59 @@ const exportToExcel = () => {
   XLSX.writeFile(workbook, `Reporte_Produccion_${new Date().toISOString().split('T')[0]}.xlsx`);
 };
 
-const stats = computed(() => [
-  { 
-    title: 'Total Registros', 
-    value: allTickets.value.length.toLocaleString(), 
-    icon: Users, 
-    trend: isLoading.value ? 'Cargando...' : 'Sincronizado', 
-    trendUp: true 
-  },
-  { 
-    title: 'Última Carga', 
-    value: lastUpdate.value, 
-    icon: Clock 
-  },
-  { 
-    title: 'Estado API', 
-    value: apiStatus.value, 
-    icon: Activity, 
-    trend: apiStatus.value === 'Online' ? 'Conectado' : 'Sin conexión', 
-    trendUp: apiStatus.value === 'Online' 
-  },
-]);
+const stats = computed(() => {
+  const baseStats = [
+    { 
+      title: 'Total Registros', 
+      value: allTickets.value.length.toLocaleString(), 
+      icon: Users, 
+      trend: isLoading.value ? 'Cargando...' : 'Sincronizado', 
+      trendUp: true 
+    },
+    { 
+      title: 'Última Carga', 
+      value: lastUpdate.value, 
+      icon: Clock 
+    },
+    { 
+      title: 'Estado API', 
+      value: apiStatus.value, 
+      icon: Activity, 
+      trend: apiStatus.value === 'Online' ? 'Conectado' : 'Sin conexión', 
+      trendUp: apiStatus.value === 'Online' 
+    },
+  ];
+
+  // Dynamic status counters based on "Estado" column
+  const statusCounts = allTickets.value.reduce((acc: Record<string, number>, ticket: any) => {
+    const estado = ticket.Estado || 'Sin Estado';
+    acc[estado] = (acc[estado] || 0) + 1;
+    return acc;
+  }, {});
+
+  const dynamicStats = Object.entries(statusCounts).map(([estado, count]) => {
+    let icon = Activity;
+    const lowerEstado = estado.toLowerCase();
+    
+    if (lowerEstado.includes('terminado') || lowerEstado.includes('completado') || lowerEstado.includes('finalizado')) {
+      icon = CheckCircle2;
+    } else if (lowerEstado.includes('pendiente') || lowerEstado.includes('espera')) {
+      icon = Clock;
+    } else if (lowerEstado.includes('error') || lowerEstado.includes('fallo')) {
+      icon = AlertCircle;
+    }
+
+    return {
+      title: `Estado: ${estado}`,
+      value: count.toLocaleString(),
+      icon: icon,
+      trend: 'Conteo dinámico',
+      trendUp: true
+    };
+  });
+
+  return [...baseStats, ...dynamicStats];
+});
 
 onMounted(() => {
   fetchReport();
