@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Table as TableIcon, FileQuestion, Trash2, Edit2 } from 'lucide-vue-next';
+import { Table as TableIcon, FileQuestion, Trash2, Edit2, Hash, Activity, Calendar, User } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/auth';
 
 const authStore = useAuthStore();
@@ -85,7 +85,7 @@ const formatValue = (value: any) => {
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="data.length === 0" class="flex-1 flex flex-col items-center justify-center text-center min-h-0">
+    <div v-else-if="data.length === 0" class="flex-1 flex flex-col items-center justify-center text-center min-h-0 p-8">
       <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
         <FileQuestion class="w-8 h-8 text-slate-300" />
       </div>
@@ -95,8 +95,55 @@ const formatValue = (value: any) => {
       </p>
     </div>
 
-    <!-- Table -->
-    <div v-else class="flex-1 overflow-auto min-h-0 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+    <!-- Mobile Card View -->
+    <div v-else class="md:hidden flex-1 overflow-auto p-4 space-y-4 bg-slate-50/50">
+      <div 
+        v-for="(row, index) in data" 
+        :key="'mobile-'+index"
+        class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3 relative"
+      >
+        <!-- Actions in corner -->
+        <div v-if="canEditOrDelete" class="absolute top-4 right-4 flex items-center gap-2">
+          <button @click="emit('edit', row)" class="p-2 text-slate-400 hover:text-indigo-600 bg-slate-50 rounded-lg transition-colors">
+            <Edit2 class="w-4 h-4" />
+          </button>
+          <button @click="emit('delete', row)" class="p-2 text-slate-400 hover:text-red-600 bg-slate-50 rounded-lg transition-colors">
+            <Trash2 class="w-4 h-4" />
+          </button>
+        </div>
+
+        <!-- Main Info -->
+        <div class="flex items-center gap-2 mb-1">
+          <div class="p-1.5 bg-indigo-50 rounded-lg">
+            <Hash class="w-4 h-4 text-indigo-600" />
+          </div>
+          <span class="text-lg font-bold text-slate-900">{{ row.Ticket || '-' }}</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 pt-2 border-t border-slate-100">
+          <div class="space-y-1">
+            <p class="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1">
+              <Activity class="w-3 h-3" /> Estado
+            </p>
+            <span class="text-sm font-semibold text-slate-700">{{ row.Estado || '-' }}</span>
+          </div>
+          <div class="space-y-1">
+            <p class="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1">
+              <Calendar class="w-3 h-3" /> Entrada
+            </p>
+            <span class="text-sm font-medium text-slate-600">{{ formatValue(row['Fecha Entrada']) }}</span>
+          </div>
+        </div>
+
+        <div v-if="row.Usuario" class="flex items-center gap-2 pt-2 text-slate-500">
+          <User class="w-3.5 h-3.5" />
+          <span class="text-xs">{{ row.Usuario }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop Table -->
+    <div v-if="data.length > 0" class="hidden md:block flex-1 overflow-auto min-h-0 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
       <table class="w-full text-left border-collapse min-w-[1000px] relative">
         <thead class="sticky top-0 z-20 bg-slate-50/50 backdrop-blur-sm">
           <tr>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import Sidebar from '../components/Sidebar.vue';
 import Header from '../components/Header.vue';
 import StatCard from '../components/StatCard.vue';
@@ -16,13 +16,19 @@ const lastUpdate = ref('Nunca');
 const apiStatus = ref<'Online' | 'Offline' | 'Error' | 'Warning'>('Offline');
 const lastError = ref<string | null>(null);
 const currentSearchTerm = ref('');
+const selectedStatus = ref<string | null>(null);
+const pollingId = ref<any>(null);
+const showSidebar = ref(false);
 
 const showModal = ref(false);
 const selectedTicket = ref<any>(null);
 
-const fetchReport = async () => {
-  isLoading.value = true;
-  lastError.value = null;
+const fetchReport = async (isSilent = false) => {
+  if (!isSilent) {
+    isLoading.value = true;
+    lastError.value = null;
+  }
+  
   try {
     const response = await axios.get('/api/reporte');
     if (response.data.success) {
@@ -34,31 +40,78 @@ const fetchReport = async () => {
         month: '2-digit',
         year: 'numeric'
       });
+      // Clear error if success
+      if (isSilent) lastError.value = null;
     } else {
       throw new Error(response.data.message || 'Error al obtener reporte');
     }
   } catch (error: any) {
     console.error('Error fetching report:', error);
-    lastError.value = error.response?.data?.message || error.message || String(error);
-    apiStatus.value = 'Error';
+    if (!isSilent) {
+      lastError.value = error.response?.data?.message || error.message || String(error);
+      apiStatus.value = 'Error';
+    }
   } finally {
-    isLoading.value = false;
+    if (!isSilent) {
+      isLoading.value = false;
+    }
   }
 };
 
+const startAdaptivePolling = () => {
+  if (pollingId.value) clearTimeout(pollingId.value);
+  
+  const setupNextPoll = () => {
+    const now = new Date();
+    const hour = now.getHours();
+    
+    // Horario laboral: 7am a 5pm (17:00)
+    const isBusinessHours = hour >= 7 && hour < 17;
+    const interval = isBusinessHours ? 2 * 60 * 1000 : 30 * 60 * 1000;
+    
+    pollingId.value = setTimeout(async () => {
+      await fetchReport(true);
+      setupNextPoll(); // Recursive call to re-evaluate hours
+    }, interval);
+  };
+  
+  setupNextPoll();
+};
+
 const filterTickets = () => {
-  if (!currentSearchTerm.value) {
-    reportData.value = allTickets.value;
-  } else {
+  let filtered = allTickets.value;
+
+  // Filtro por término de búsqueda
+  if (currentSearchTerm.value) {
     const query = currentSearchTerm.value.toLowerCase();
-    reportData.value = allTickets.value.filter((ticket: any) => 
+    filtered = filtered.filter((ticket: any) => 
       ticket.Ticket && String(ticket.Ticket).toLowerCase().includes(query)
     );
   }
+
+  // Filtro por estado seleccionado
+  if (selectedStatus.value) {
+    filtered = filtered.filter((ticket: any) => 
+      ticket.Estado === selectedStatus.value
+    );
+  }
+
+  reportData.value = filtered;
 };
 
 const handleSearch = (query: string) => {
   currentSearchTerm.value = query;
+  filterTickets();
+};
+
+const handleStatusFilter = (statTitle: string) => {
+  if (statTitle === 'Total Registros' || statTitle === 'Última Carga' || statTitle === 'Estado API') {
+    selectedStatus.value = null;
+  } else {
+    // El título es "Estado: XXXX", extraemos el nombre del estado
+    const estado = statTitle.replace('Estado: ', '');
+    selectedStatus.value = estado;
+  }
   filterTickets();
 };
 
@@ -149,19 +202,22 @@ const stats = computed(() => {
       value: allTickets.value.length.toLocaleString(), 
       icon: Users, 
       trend: isLoading.value ? 'Cargando...' : 'Sincronizado', 
-      trendUp: true 
+      trendUp: true,
+      active: selectedStatus.value === null
     },
     { 
       title: 'Última Carga', 
       value: lastUpdate.value, 
-      icon: Clock 
+      icon: Clock,
+      active: false
     },
     { 
       title: 'Estado API', 
       value: apiStatus.value, 
       icon: Activity, 
       trend: apiStatus.value === 'Online' ? 'Conectado' : 'Sin conexión', 
-      trendUp: apiStatus.value === 'Online' 
+      trendUp: apiStatus.value === 'Online',
+      active: false
     },
   ];
 
@@ -189,7 +245,8 @@ const stats = computed(() => {
       value: count.toLocaleString(),
       icon: icon,
       trend: 'Conteo dinámico',
-      trendUp: true
+      trendUp: true,
+      active: selectedStatus.value === estado
     };
   });
 
@@ -198,20 +255,28 @@ const stats = computed(() => {
 
 onMounted(() => {
   fetchReport();
+  startAdaptivePolling();
+});
+
+onUnmounted(() => {
+  if (pollingId.value) clearTimeout(pollingId.value);
 });
 </script>
 
 <template>
-  <div class="h-screen bg-slate-50 flex overflow-hidden">
+  <div class="h-screen bg-slate-50 flex overflow-hidden relative">
     <Sidebar 
+      :show="showSidebar"
       @addTicket="openModal(null)" 
       @exportExcel="exportToExcel" 
+      @close="showSidebar = false"
     />
     
     <main class="flex-1 lg:ml-64 flex flex-col min-w-0 h-screen overflow-hidden">
       <Header 
         title="Dashboard de Producción" 
         @search="handleSearch"
+        @toggleMenu="showSidebar = true"
       />
       
       <!-- Contenedor principal con flex-1 y flex-col -->
@@ -225,7 +290,22 @@ onMounted(() => {
               v-for="stat in stats" 
               :key="stat.title"
               v-bind="stat"
+              @click="handleStatusFilter(stat.title)"
             />
+          </div>
+
+          <!-- Active Filter Indicator -->
+          <div v-if="selectedStatus" class="flex items-center justify-between bg-indigo-50 border border-indigo-100 px-4 py-2 rounded-lg">
+            <div class="flex items-center gap-2 text-indigo-700 text-sm font-medium">
+              <Activity class="w-4 h-4" />
+              Filtrando por estado: <span class="font-bold underline">{{ selectedStatus }}</span>
+            </div>
+            <button 
+              @click="handleStatusFilter('Total Registros')"
+              class="text-xs text-indigo-600 hover:text-indigo-800 font-bold uppercase tracking-wider"
+            >
+              Limpiar Filtro
+            </button>
           </div>
 
           <!-- Error Alert -->

@@ -7,7 +7,11 @@ import { computed } from 'vue';
 const router = useRouter();
 const authStore = useAuthStore();
 
-const emit = defineEmits(['addTicket', 'exportExcel']);
+const props = defineProps<{
+  show?: boolean;
+}>();
+
+const emit = defineEmits(['addTicket', 'exportExcel', 'close']);
 
 const userCargo = computed(() => authStore.user?.Cargo?.toLowerCase() || '');
 
@@ -25,15 +29,29 @@ const handleLogout = () => {
 </script>
 
 <template>
-  <aside class="fixed left-0 top-0 h-screen w-64 bg-slate-900 text-slate-300 flex flex-col border-r border-slate-800 z-30">
-    <div class="p-6">
-      <h1 class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-        <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-          <span class="text-white font-black text-xs">R</span>
-        </div>
-        Reporte Produc
-      </h1>
-    </div>
+  <div>
+    <!-- Backdrop para móvil -->
+    <div 
+      v-if="show" 
+      class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 lg:hidden"
+      @click="emit('close')"
+    ></div>
+
+    <aside 
+      class="fixed left-0 top-0 h-screen w-64 bg-slate-900 text-slate-300 flex flex-col border-r border-slate-800 z-50 transition-transform duration-300 lg:translate-x-0"
+      :class="[show ? 'translate-x-0' : '-translate-x-full']"
+    >
+      <div class="p-6 flex items-center justify-between">
+        <h1 class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+          <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+            <span class="text-white font-black text-xs">R</span>
+          </div>
+          Reporte Produc
+        </h1>
+        <button @click="emit('close')" class="lg:hidden p-2 text-slate-400 hover:text-white">
+          <PlusCircle class="w-6 h-6 rotate-45" />
+        </button>
+      </div>
 
     <div class="px-4 mb-4">
       <div class="flex items-center gap-3 px-3 py-2 bg-slate-800/50 rounded-xl border border-slate-700/50">

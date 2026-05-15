@@ -1,17 +1,26 @@
 <script setup lang="ts">
 import type { Component } from 'vue';
 
-defineProps<{
+const props = defineProps<{
   title: string;
   value: string | number;
   icon: Component;
   trend?: string;
   trendUp?: boolean;
+  active?: boolean;
 }>();
 </script>
 
 <template>
-  <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
+  <div 
+    @click="$emit('click')"
+    class="p-4 rounded-xl border shadow-sm flex items-start justify-between cursor-pointer transition-all active:scale-[0.98]"
+    :class="[
+      active 
+        ? 'bg-indigo-50 border-indigo-500 ring-1 ring-indigo-500' 
+        : 'bg-white border-slate-200 hover:border-indigo-300 hover:shadow-md'
+    ]"
+  >
     <div class="min-w-0">
       <p class="text-xs font-medium text-slate-500 mb-0.5 truncate">{{ title }}</p>
       <h3 class="text-xl font-bold text-slate-900 truncate">{{ value }}</h3>
