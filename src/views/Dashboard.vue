@@ -162,9 +162,9 @@ onMounted(() => {
       <div class="p-4 md:p-8 flex flex-col flex-1 min-h-0 max-w-[1600px] mx-auto w-full gap-4 md:gap-8">
         
         <!-- Contenedor superior fijo (Stats Grid y Error Alert) -->
-        <div class="flex-shrink-0 space-y-4 md:space-y-8">
+        <div class="flex-shrink-0 space-y-4">
           <!-- Stats Grid -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             <StatCard 
               v-for="stat in stats" 
               :key="stat.title"

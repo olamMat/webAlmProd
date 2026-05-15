@@ -11,21 +11,21 @@ defineProps<{
 </script>
 
 <template>
-  <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
-    <div>
-      <p class="text-sm font-medium text-slate-500 mb-1">{{ title }}</p>
-      <h3 class="text-2xl font-bold text-slate-900">{{ value }}</h3>
-      <div v-if="trend" class="mt-2 flex items-center gap-1">
+  <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
+    <div class="min-w-0">
+      <p class="text-xs font-medium text-slate-500 mb-0.5 truncate">{{ title }}</p>
+      <h3 class="text-xl font-bold text-slate-900 truncate">{{ value }}</h3>
+      <div v-if="trend" class="mt-1 flex items-center gap-1">
         <span 
-          class="text-xs font-medium"
+          class="text-[10px] font-medium leading-none"
           :class="[trendUp ? 'text-emerald-600' : 'text-rose-600']"
         >
           {{ trend }}
         </span>
       </div>
     </div>
-    <div class="p-3 bg-slate-50 rounded-lg">
-      <component :is="icon" class="w-6 h-6 text-indigo-600" />
+    <div class="p-2 bg-slate-50 rounded-lg flex-shrink-0 ml-3">
+      <component :is="icon" class="w-5 h-5 text-indigo-600" />
     </div>
   </div>
 </template>
