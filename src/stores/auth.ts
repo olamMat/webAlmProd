@@ -29,11 +29,6 @@ export const useAuthStore = defineStore('auth', {
         const firstPass = toUtf16LeBase64(credentials.Pass);
         const doublePass = toUtf16LeBase64(firstPass);
         
-        console.log('--- DEBUG ENCODING ---');
-        console.log('Pass Original:', credentials.Pass);
-        console.log('Capa 1 (UTF-16LE):', firstPass);
-        console.log('Capa 2 (UTF-16LE):', doublePass);
-
         const response = await axios.post('/api/login', {
           Login: credentials.Login,
           Pass: doublePass
@@ -48,9 +43,6 @@ export const useAuthStore = defineStore('auth', {
           return false;
         }
       } catch (err: any) {
-        console.error('--- ERROR AUTH ---');
-        console.error('Status:', err.response?.status);
-        console.error('Data:', err.response?.data);
         this.error = err.response?.data?.message || 'Error al iniciar sesión';
         return false;
       } finally {

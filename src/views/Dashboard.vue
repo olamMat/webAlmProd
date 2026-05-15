@@ -89,21 +89,29 @@ const exportToExcel = () => {
     dateColumns.forEach(col => {
       if (formattedTicket[col]) {
         let value = formattedTicket[col];
+        let dateObj: Date | null = null;
         
-        // Handle /Date(ms)/ format
+        // Case 1: /Date(ms)/ format
         if (typeof value === 'string' && value.includes('/Date(')) {
           const timestamp = parseInt(value.match(/\/Date\((\d+)\)\//)?.[1] || '0');
-          if (timestamp) {
-            const date = new Date(timestamp);
-            formattedTicket[col] = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
-          }
+          if (timestamp) dateObj = new Date(timestamp);
         } 
-        // Handle ISO or common date strings
-        else if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) {
-          const date = new Date(value);
-          if (!isNaN(date.getTime())) {
-            formattedTicket[col] = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
-          }
+        // Case 2: ISO string or any string that can be parsed as a date
+        else if (typeof value === 'string') {
+          const parsedDate = new Date(value);
+          if (!isNaN(parsedDate.getTime())) dateObj = parsedDate;
+        }
+        // Case 3: Already a Date object
+        else if (value instanceof Date) {
+          dateObj = value;
+        }
+
+        if (dateObj) {
+          // Force string format DD/MM/AAAA to avoid Excel auto-parsing back to ISO
+          const day = String(dateObj.getUTCDate()).padStart(2, '0');
+          const month = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+          const year = dateObj.getUTCFullYear();
+          formattedTicket[col] = `${day}/${month}/${year}`;
         }
       }
     });
