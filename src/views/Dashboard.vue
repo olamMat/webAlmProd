@@ -80,7 +80,38 @@ const handleDelete = async (row: any) => {
 
 const exportToExcel = () => {
   if (allTickets.value.length === 0) return;
-  const worksheet = XLSX.utils.json_to_sheet(allTickets.value);
+
+  // Format dates before exporting to Excel
+  const formattedData = allTickets.value.map(ticket => {
+    const formattedTicket = { ...ticket };
+    const dateColumns = ['Fecha Entrada', 'Fecha Prod'];
+    
+    dateColumns.forEach(col => {
+      if (formattedTicket[col]) {
+        let value = formattedTicket[col];
+        
+        // Handle /Date(ms)/ format
+        if (typeof value === 'string' && value.includes('/Date(')) {
+          const timestamp = parseInt(value.match(/\/Date\((\d+)\)\//)?.[1] || '0');
+          if (timestamp) {
+            const date = new Date(timestamp);
+            formattedTicket[col] = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+          }
+        } 
+        // Handle ISO or common date strings
+        else if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) {
+          const date = new Date(value);
+          if (!isNaN(date.getTime())) {
+            formattedTicket[col] = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+          }
+        }
+      }
+    });
+    
+    return formattedTicket;
+  });
+
+  const worksheet = XLSX.utils.json_to_sheet(formattedData);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "Reporte");
   XLSX.writeFile(workbook, `Reporte_Produccion_${new Date().toISOString().split('T')[0]}.xlsx`);
