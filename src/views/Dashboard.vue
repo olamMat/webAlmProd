@@ -19,7 +19,7 @@ const currentSearchTerm = ref('');
 const selectedStatus = ref<string | null>(null);
 const pollingId = ref<any>(null);
 const showSidebar = ref(false);
-const showMobileStats = ref(false);
+const showStats = ref(typeof window !== 'undefined' ? window.innerWidth >= 768 : true);
 
 const showModal = ref(false);
 const selectedTicket = ref<any>(null);
@@ -285,22 +285,22 @@ onUnmounted(() => {
         
         <!-- Contenedor superior fijo (Stats Grid y Error Alert) -->
         <div class="flex-shrink-0 space-y-4">
-          <!-- Toggle Button for Mobile Stats -->
-          <div class="md:hidden flex items-center justify-between">
+          <!-- Toggle Button for Stats -->
+          <div class="flex items-center justify-between">
             <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Indicadores</h3>
             <button 
-              @click="showMobileStats = !showMobileStats"
+              @click="showStats = !showStats"
               class="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors shadow-sm"
             >
-              {{ showMobileStats ? 'Ocultar' : 'Ver resumen' }}
-              <component :is="showMobileStats ? ChevronUp : ChevronDown" class="w-4 h-4" />
+              {{ showStats ? 'Ocultar resumen' : 'Ver resumen' }}
+              <component :is="showStats ? ChevronUp : ChevronDown" class="w-4 h-4" />
             </button>
           </div>
 
           <!-- Stats Grid -->
           <div 
             class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 transition-all"
-            :class="[showMobileStats ? 'grid' : 'hidden md:grid']"
+            :class="showStats ? 'grid' : 'hidden'"
           >
             <StatCard 
               v-for="stat in stats" 
