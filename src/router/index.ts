@@ -4,13 +4,13 @@ import Login from '../views/Login.vue';
 
 const routes = [
   {
-    path: '/login',
+    path: 'login',
     name: 'Login',
     component: Login,
     meta: { guest: true }
   },
   {
-    path: '/',
+    path: '',
     name: 'Dashboard',
     component: Dashboard,
     meta: { requiresAuth: true }
@@ -28,7 +28,7 @@ router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth && !isAuthenticated) {
     next('/login');
   } else if (to.meta.guest && isAuthenticated) {
-    next('/');
+    next('');
   } else {
     next();
   }
