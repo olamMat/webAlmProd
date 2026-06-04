@@ -10,7 +10,7 @@ const routes = [
     meta: { guest: true }
   },
   {
-    path: '',
+    path: '/',
     name: 'Dashboard',
     component: Dashboard,
     meta: { requiresAuth: true }
