@@ -9,8 +9,8 @@ export default defineConfig({
     host: true,
     allowedHosts: ['olamvue.ngrok.app', '.ngrok-free.app'],
     proxy: {
-      '/api': {
-        target: 'https://olamproduc.ngrok.app',
+      '': {
+        target: 'https://olammat.ngrok.app/produccion/',
         changeOrigin: true
       }
     }
