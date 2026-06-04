@@ -1,6 +1,6 @@
 [[redirects]]
   from = "/api/*"
-  to = "https://olamproduc.ngrok.app/api/:splat"
+  to = "https://olammat.ngrok.app/api/produccion/:splat"
   status = 200
   force = true
   [redirects.headers]

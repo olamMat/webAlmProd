@@ -7,11 +7,15 @@ export default defineConfig({
     port: 4006,
     strictPort: true,
     host: true,
-    allowedHosts: ['olamvue.ngrok.app', '.ngrok-free.app'],
+    allowedHosts: ['olamvue.ngrok.app', '.ngrok-free.app', '.ngrok.app'],
     proxy: {
       '/api': {
-        target: 'https://olamproduc.ngrok.app',
-        changeOrigin: true
+        target: 'https://olammat.ngrok.app',
+        changeOrigin: true,
+        headers: {
+          'ngrok-skip-browser-warning': 'true'
+        },
+        rewrite: (path) => path.replace(/^\/api/, '/api/produccion')
       }
     }
   }

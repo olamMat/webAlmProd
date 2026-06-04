@@ -1,2 +1,2 @@
-/api/*  https://olamproduc.ngrok.app/api/:splat  200!
+/api/*  https://olammat.ngrok.app/api/produccion/:splat  200!
 /*      /index.html  200
